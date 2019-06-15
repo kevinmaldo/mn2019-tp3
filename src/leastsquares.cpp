@@ -26,7 +26,7 @@ Matrix LeastSquaresClassifier::buildMatrix(Vector x) {
 
 void LeastSquaresClassifier::fit(Vector x, Vector y) {
     Matrix A = buildMatrix(x);
-    printMatrix(A);
+    // printMatrix(A);
     this->coef = (A.transpose() * A).colPivHouseholderQr().solve(A.transpose() * y);
 }
 
