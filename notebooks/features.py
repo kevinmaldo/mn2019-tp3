@@ -1,3 +1,6 @@
+import pickle
+from typing import Callable
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,9 +11,12 @@ from scipy import signal
 from scipy.fftpack import fft
 import os
 
-import sentiment # TODO: cambiar el nombre
+import time
+
+import sentiment  # TODO: cambiar el nombre
 
 from pandas.plotting import register_matplotlib_converters
+
 register_matplotlib_converters()
 
 # No convertir Delayed en booleano, no perder la informacion de cuanta demora hay (diff entre 14 y 15 min)
@@ -33,12 +39,12 @@ _PLOTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__
 if not os.path.exists(_PLOTS_FOLDER):
     os.makedirs(_PLOTS_FOLDER)
 
-ALL_DATA_RANGE = list(range(2003, 2009))
-
 def _load_original_csv(years):
     columns = ["Year", "Month", "DayofMonth", "ArrDelay", "DepDelay", "UniqueCarrier"]
     dataframes = (pd.read_csv("../data/{}.csv".format(year), usecols=columns) for year in years)
-    return pd.concat(dataframes, ignore_index=False)
+    # return pd.concat(dataframes, ignore_index=False)
+    return dataframes
+
 
 def _set_date_index(df):
     df["Date"] = df["Year"].map("{:04d}".format) + "-" + \
@@ -48,11 +54,14 @@ def _set_date_index(df):
     df = df.drop(columns=['Year', 'Month', 'DayofMonth'])
     return df
 
+
 def _set_delayed(df):
     df["Delayed"] = np.maximum(0, np.maximum(df["ArrDelay"], df["DepDelay"]))
-    #df["Delayed"] = ((df["ArrDelay"] >= 15) | (df["DepDelay"] >= 15)).astype(np.float64)
+    df = df[~df["Delayed"].isna()]
+    # df["Delayed"] = ((df["ArrDelay"] >= 15) | (df["DepDelay"] >= 15)).astype(np.float64)
     df = df.drop(columns=["ArrDelay", "DepDelay"])
     return df
+
 
 def _group_by_date(df):
     df = df.groupby(["Date", "UniqueCarrier"])["Delayed"].mean().to_frame()
@@ -60,18 +69,21 @@ def _group_by_date(df):
     df = df.set_index("Date")
     return df
 
+
 def _smooth_delayed(df):
     # convolucion?
     # butter filter?
-    #f, (ax1, ax2) = plt.subplots(2, 1)
-    #sns.lineplot(df.index, df["Cleaned"], color='b', label="raw", ax=ax1)
-    #df["Cleaned"] = signal.savgol_filter(df["Cleaned"], 50001, 3)
-    #sns.lineplot(df.index, df["Cleaned"], color='r', label="filtered", ax=ax2)
-    #plt.show()
+    # f, (ax1, ax2) = plt.subplots(2, 1)
+    # sns.lineplot(df.index, df["Cleaned"], color='b', label="raw", ax=ax1)
+    # df["Cleaned"] = signal.savgol_filter(df["Cleaned"], 50001, 3)
+    # sns.lineplot(df.index, df["Cleaned"], color='r', label="filtered", ax=ax2)
+    # plt.show()
     return df
+
 
 def _build_lstsq_matrix(x):
     return np.stack([x.values, np.ones(x.shape[0])], axis=1)
+
 
 def _trending(df):
     day_timestamps = df.index.astype(np.int64) // 10 ** 9
@@ -80,7 +92,7 @@ def _trending(df):
     timestamps = (df.index.astype(np.int64) // 10 ** 9)
     linear_prediction = _build_lstsq_matrix(timestamps) @ np.array(coefs)
     sns.lineplot(day_timestamps, linear_prediction).set_title("Linear trending")
-    
+
     # TODO: se pisan los titulos
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(20, 10))
     sns.scatterplot(df.index, df["Cleaned"], ax=ax1).set_title("Linear trending")
@@ -90,11 +102,13 @@ def _trending(df):
     ax1.set_xlim([df.index[0], df.index[-1]])
     ax2.set_xlim([df.index[0], df.index[-1]])
     fig.savefig(os.path.join(_PLOTS_FOLDER, "linear_trending.png"))
+    plt.close()
 
     df["WithoutTrend"] = df["Cleaned"] - linear_prediction
     df["Prediction"] += linear_prediction
     df["Cleaned"] -= linear_prediction
     return df
+
 
 def _second_periodic(df):
     peaks = 3
@@ -102,7 +116,7 @@ def _second_periodic(df):
     df["DaysNumber"] = (df.index - df.index[0]) / np.timedelta64(1, 'D')
     years = (df.index[-1] - df.index[0]) / np.timedelta64(1, 'Y')
     factor = 2 * np.pi * years * peaks / N
-    functions = [np.sin(df["DaysNumber"]*factor), np.cos(df["DaysNumber"]*factor)]
+    functions = [np.sin(df["DaysNumber"] * factor), np.cos(df["DaysNumber"] * factor)]
     A = np.stack(functions, axis=-1)
     coeffs = np.linalg.lstsq(A, df["Cleaned"], rcond=None)[0]
     prediction = A @ coeffs
@@ -111,12 +125,12 @@ def _second_periodic(df):
     sns.scatterplot(df.index, df["Cleaned"], ax=ax1).set_title("Previous")
     sns.lineplot(df.index, prediction, ax=ax1, color='r')
     sns.scatterplot(df.index, df["Cleaned"] - prediction, ax=ax2).set_title("Without prediction")
-    #sns.lineplot(df.index, df["Cleaned"] - prediction, ax=ax2)
+    # sns.lineplot(df.index, df["Cleaned"] - prediction, ax=ax2)
 
     ax1.set_xlim([df.index[0], df.index[-1]])
     ax2.set_xlim([df.index[0], df.index[-1]])
     for idx, date in enumerate(df.index):
-        if idx == 0 or df.index[idx].year != df.index[idx-1].year:
+        if idx == 0 or df.index[idx].year != df.index[idx - 1].year:
             ax1.axvline(x=date, color='k', linestyle='--')
             ax2.axvline(x=date, color='k', linestyle='--')
     fig.savefig(os.path.join(_PLOTS_FOLDER, "second_periodic.png"))
@@ -124,13 +138,14 @@ def _second_periodic(df):
     df["Cleaned"] -= prediction
     return df
 
+
 def _first_periodic(df):
     for peaks in [1, 2, 3]:
         N = df.index.nunique()
         df["DaysNumber"] = (df.index - df.index[0]) / np.timedelta64(1, 'D')
         years = (df.index[-1] - df.index[0]) / np.timedelta64(1, 'Y')
         factor = 2 * np.pi * years * peaks / N
-        functions = [np.sin(df["DaysNumber"]*factor), np.cos(df["DaysNumber"]*factor)]
+        functions = [np.sin(df["DaysNumber"] * factor), np.cos(df["DaysNumber"] * factor)]
         A = np.stack(functions, axis=1)
         coeffs = np.linalg.lstsq(A, df["Cleaned"], rcond=None)[0]
         prediction = A @ coeffs
@@ -144,12 +159,13 @@ def _first_periodic(df):
         ax1.set_xlim([df.index[0], df.index[-1]])
         ax2.set_xlim([df.index[0], df.index[-1]])
         for idx, date in enumerate(df.index):
-            if idx == 0 or df.index[idx].year != df.index[idx-1].year:
+            if idx == 0 or df.index[idx].year != df.index[idx - 1].year:
                 ax1.axvline(x=date, color='k', linestyle='--')
                 ax2.axvline(x=date, color='k', linestyle='--')
         fig.savefig(os.path.join(_PLOTS_FOLDER, "peaks_{}.png".format(peaks)))
         df["Cleaned"] -= prediction
     return df
+
 
 def _sum_of_periodic(df):
     functions = []
@@ -158,8 +174,8 @@ def _sum_of_periodic(df):
         df["DaysNumber"] = (df.index - df.index[0]) / np.timedelta64(1, 'D')
         years = (df.index[-1] - df.index[0]) / np.timedelta64(1, 'Y')
         factor = 2 * np.pi * years * peaks / N
-        functions.append(np.sin(df["DaysNumber"]*factor))
-        functions.append(np.cos(df["DaysNumber"]*factor))
+        functions.append(np.sin(df["DaysNumber"] * factor))
+        functions.append(np.cos(df["DaysNumber"] * factor))
     A = np.stack(functions, axis=1)
     coeffs = np.linalg.lstsq(A, df["Cleaned"], rcond=None)[0]
     prediction = A @ coeffs
@@ -174,15 +190,15 @@ def _sum_of_periodic(df):
     ax1.set_xlim([df.index[0], df.index[-1]])
     ax2.set_xlim([df.index[0], df.index[-1]])
     for idx, date in enumerate(df.index):
-        if idx == 0 or df.index[idx].year != df.index[idx-1].year:
+        if idx == 0 or df.index[idx].year != df.index[idx - 1].year:
             ax1.axvline(x=date, color='k', linestyle='--')
             ax2.axvline(x=date, color='k', linestyle='--')
     fig.savefig(os.path.join(_PLOTS_FOLDER, "sum_of_periodics.png"))
     return df
 
+
 def _hollidays(df):
-    functions = []
-    functions.append(1 / (1 + np.minimum(df.index.dayofyear, abs(df.index.dayofyear - 365))**2))
+    functions = [1 / (1 + np.minimum(df.index.dayofyear, abs(df.index.dayofyear - 365)) ** 2)]
     A = np.stack(functions, axis=1)
     coeffs = np.linalg.lstsq(A, df["Cleaned"], rcond=None)[0]
     prediction = A @ coeffs
@@ -196,11 +212,12 @@ def _hollidays(df):
     ax1.set_xlim([df.index[0], df.index[-1]])
     ax2.set_xlim([df.index[0], df.index[-1]])
     for idx, date in enumerate(df.index):
-        if idx == 0 or df.index[idx].year != df.index[idx-1].year:
+        if idx == 0 or df.index[idx].year != df.index[idx - 1].year:
             ax1.axvline(x=date, color='k', linestyle='--')
             ax2.axvline(x=date, color='k', linestyle='--')
     fig.savefig(os.path.join(_PLOTS_FOLDER, "hollydays_peak.png"))
     return df
+
 
 def _plot_within_year(df):
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(20, 10))
@@ -211,6 +228,7 @@ def _plot_within_year(df):
     ax3.set_xlim([months.index[0], months.index[-1]])
     fig.savefig(os.path.join(_PLOTS_FOLDER, "within_year.png"))
 
+
 def _plot_within_month(df):
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(20, 10))
     sns.lineplot(df.index.day, df["Cleaned"], ax=ax1).set_title("Grouped by day of month")
@@ -218,6 +236,7 @@ def _plot_within_month(df):
     sns.scatterplot(df.index[:91], df["Cleaned"][:91], ax=ax3).set_title("Zoomed first months")
     ax3.set_xlim([df.index[0], df.index[90]])
     fig.savefig(os.path.join(_PLOTS_FOLDER, "within_month.png"))
+
 
 def _plot_within_week(df):
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(20, 10))
@@ -227,13 +246,14 @@ def _plot_within_week(df):
     ax3.set_xlim([df.index[0], df.index[21]])
     fig.savefig(os.path.join(_PLOTS_FOLDER, "within_week.png"))
 
+
 def _within_week_periodic(df):
     peaks = 52 * 2
     N = df.index.nunique()
     df["DaysNumber"] = (df.index - df.index[0]) / np.timedelta64(1, 'D')
     years = (df.index[-1] - df.index[0]) / np.timedelta64(1, 'Y')
     factor = 2 * np.pi * years * peaks / N
-    functions = [np.sin(df["DaysNumber"]*factor), np.cos(df["DaysNumber"]*factor)]
+    functions = [np.sin(df["DaysNumber"] * factor), np.cos(df["DaysNumber"] * factor)]
     A = np.stack(functions, axis=1)
     coeffs = np.linalg.lstsq(A, df["Cleaned"], rcond=None)[0]
     prediction = A @ coeffs
@@ -255,6 +275,7 @@ def _within_week_periodic(df):
     df["Cleaned"] -= prediction
     return df
 
+
 def _year_periodicity(df):
     fig = plt.figure()
     sns.scatterplot(df.index.dayofyear, df.WithoutTrend)
@@ -267,11 +288,12 @@ def _year_periodicity(df):
     plt.close()
     return df
 
-def _week_periodicity(df):
-    fig = plt.figure()
+
+def _week_periodicity(df) -> pd.DataFrame:
+    plt.figure()
     sns.boxplot(df.index.dayofweek, df["WithoutYearPeriod"])
     plt.close()
-    fig = plt.figure()
+    plt.figure()
     sns.scatterplot(df.index.dayofweek, df["WithoutYearPeriod"])
     pol = np.polyfit(df.index.dayofweek, df["WithoutYearPeriod"], 5)
     week_prediction = np.polyval(pol, df.index.dayofweek)
@@ -282,70 +304,77 @@ def _week_periodicity(df):
     df["Cleaned"] -= week_prediction
     return df
 
+
 def _month_periodicity(df):
-    fig = plt.figure()
+    plt.figure()
     sns.boxplot(df.index.day, df["WithoutYearPeriod"])
     plt.close()
-    fig = plt.figure()
+    plt.figure()
     sns.boxplot(df.index.month, df["WithoutYearPeriod"])
     plt.close()
     return df
+
 
 def _init_prediction(df):
     df["Prediction"] = 0
     return df
 
+
 def _init_cleaned(df):
     df["Cleaned"] = df.groupby(df.index)["Delayed"].transform(np.mean)
     return df
 
+
 def _plot_cleaned(df):
     pass
+
 
 def _build_least_squares_matrix(df):
     features = []
 
     features.append(np.ones(df.shape[0]))
-    features.append(df.index.astype(np.int) / 10**9)
+    features.append(df.index.astype(np.int) / 10 ** 9)
 
-    for peaks in [1, 2, 3, 4, 12*4, 12*4*2]:
+    for peaks in [1, 2, 3, 4, 12 * 4, 12 * 4 * 2]:
         N = df.index.nunique()
         df["DaysNumber"] = (df.index - df.index[0]) / np.timedelta64(1, 'D')
         years = (df.index[-1] - df.index[0]) / np.timedelta64(1, 'Y')
         factor = 2 * np.pi * years * peaks / N
-        #features.append(np.sin(df["DaysNumber"]*factor))
-        #features.append(np.cos(df["DaysNumber"]*factor))
+        # features.append(np.sin(df["DaysNumber"]*factor))
+        # features.append(np.cos(df["DaysNumber"]*factor))
 
-    s = 365.0 # observations per annum
+    s = 365.0  # observations per annum
     n = int(s // 2)
-    df["ts"] = df.index.astype(np.int) / 10**9
-    for j in range(0, n+1):
+    df["ts"] = df.index.astype(np.int) / 10 ** 9
+    for j in range(0, n + 1):
         factor = 2 * np.pi * j / s
         df["DaysNumber"] = (df.index - df.index[0]) / np.timedelta64(1, 'D')
-        features.append(np.sin(df["DaysNumber"]*factor))
-        features.append(np.cos(df["DaysNumber"]*factor))
+        features.append(np.sin(df["DaysNumber"] * factor))
+        features.append(np.cos(df["DaysNumber"] * factor))
 
-
-    for peaks in [1, 2, 3, 4, 12*4, 12*4*2]:
+    for peaks in [1, 2, 3, 4, 12 * 4, 12 * 4 * 2]:
         N = df.index.nunique()
         df["DaysNumber"] = (df.index - df.index[0]) / np.timedelta64(1, 'D')
         years = (df.index[-1] - df.index[0]) / np.timedelta64(1, 'Y')
         factor = 2 * np.pi * years * peaks / N
-        #features.append(np.sin(df["DaysNumber"]*factor)**2)
-        #features.append(np.cos(df["DaysNumber"]*factor)**2)
-    
-    #for grade in [1, 2, 3, 4, 5]:
-        #features.append(df.index.dayofweek**grade)
+        # features.append(np.sin(df["DaysNumber"]*factor)**2)
+        # features.append(np.cos(df["DaysNumber"]*factor)**2)
 
-    features.append(1 / (1 + np.minimum(df.index.dayofyear, abs(df.index.dayofyear - 365))**2))
+    # for grade in [1, 2, 3, 4, 5]:
+    # features.append(df.index.dayofweek**grade)
+
+    features.append(1 / (1 + np.minimum(df.index.dayofyear, abs(df.index.dayofyear - 365)) ** 2))
 
     return np.stack(features, axis=1)
+
 
 def _plot_prediction(df):
     print("RMSE: {}".format(math.sqrt(mean_squared_error(df["Delayed"], df["Prediction"]))))
 
+
 def _plot_frequencies(df):
     pass
+
 
 def _train(df):
     A = _build_least_squares_matrix(df)
@@ -373,36 +402,69 @@ def _train(df):
 
     return coeffs
 
-def _fit(training_years):
-    df = _load_original_csv(training_years)
+
+def cached_df(prefix: str):
+    def decorator(f: Callable[[int], pd.DataFrame]):
+        def wraped(year: int):
+            filename = os.path.join(
+                os.path.dirname(__file__), '..', 'data', prefix + str(year) + '.csv'
+            )
+            if os.path.isfile(filename):
+                df = pd.read_csv(filename)
+                df["Date"] = pd.to_datetime(df["Date"])
+                df = df.reset_index()
+                df = df.set_index("Date")
+                return df
+            else:
+                df = f(year)
+                df.to_csv(filename)
+                return df
+        return wraped
+    return decorator
+
+
+@cached_df('processed')
+def _get_pre_processed_year(year) -> pd.DataFrame:
+    columns = ["Year", "Month", "DayofMonth", "ArrDelay", "DepDelay", "UniqueCarrier"]
+    df = pd.read_csv("../data/{}.csv".format(year), usecols=columns)
     df = _set_date_index(df)
     df = _set_delayed(df)
     df = _group_by_date(df)
-    df = _init_prediction(df)
-    df = _init_cleaned(df)
-    df = _smooth_delayed(df)
-    df = _trending(df)
-    df = _hollidays(df)
-    df = _sum_of_periodic(df)
-    df = _first_periodic(df)
-    df = _hollidays(df)
-    df = _within_week_periodic(df)
-    _plot_within_year(df)
-    _plot_within_month(df)
-    _plot_within_week(df)
-    df = _second_periodic(df)
-    df = _year_periodicity(df)
-    df = _month_periodicity(df)
-    df = _week_periodicity(df)
+    return df
+
+
+def _get_pre_processed_data(years) -> pd.DataFrame:
+    return pd.concat(map(_get_pre_processed_year, years), ignore_index=False)
+
+
+def _fit(training_years):
+    df = _get_pre_processed_data(training_years)
+
+    # df = _init_prediction(df)
+    # df = _init_cleaned(df)
+    # df = _smooth_delayed(df)
+    # df = _trending(df)
+    # df = _hollidays(df)
+    # df = _sum_of_periodic(df)
+    # df = _first_periodic(df)
+    # df = _hollidays(df)
+    # df = _within_week_periodic(df)
+    # _plot_within_year(df)
+    # _plot_within_month(df)
+    # _plot_within_week(df)
+    # df = _second_periodic(df)
+    # df = _year_periodicity(df)
+    # df = _month_periodicity(df)
+    # df = _week_periodicity(df)
+
     coeffs = _train(df)
     return coeffs
 
+
 def _predict(test_years, coeffs):
-    df = _load_original_csv(test_years)
-    df = _set_date_index(df)
-    df = _set_delayed(df)
-    df = _group_by_date(df)
-    df = df[df.index < '2008-09-01'] # remove 2008 crisis
+    df = _get_pre_processed_data(test_years)
+    df = df[df.index < '2008-09-01']  # remove 2008 crisis
+    df = df[~df["Delayed"].isna()]
 
     prediction = _build_least_squares_matrix(df) @ coeffs
 
@@ -419,11 +481,13 @@ def _predict(test_years, coeffs):
 
 
 def main():
-    training_years_count = 3
+    ALL_DATA_RANGE = list(range(1987, 2009))
+    training_years_count = -3
     training_years = ALL_DATA_RANGE[:training_years_count]
     test_years = ALL_DATA_RANGE[training_years_count:]
-    coeffs =_fit(training_years)
+    coeffs = _fit(training_years)
     _predict(test_years, coeffs)
+
 
 if __name__ == "__main__":
     main()
