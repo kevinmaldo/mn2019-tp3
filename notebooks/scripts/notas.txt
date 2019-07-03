@@ -1,0 +1,2 @@
+- El dep delay se 'suma' al arr delay
+- cuando cancelled, los delays son NaN

@@ -16,6 +16,7 @@ All columns:
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 DATA_DIR: Path = Path(__file__).parents[2] / 'data'
 PLOT_DIR: Path = Path(__file__).parents[2] / 'plots'
@@ -39,7 +40,8 @@ def set_date_index(df: pd.DataFrame) -> pd.DataFrame:
 
 def departure_vs_arrive():
 
-    (PLOT_DIR / 'Arr_vs_Dep_Delays').mkdir(exist_ok=True)
+    folder = PLOT_DIR / 'Arr_vs_Dep_Delays'
+    folder.mkdir(exist_ok=True)
 
     for year in range(1987, 2009):
         df = get_year(year)
@@ -48,11 +50,20 @@ def departure_vs_arrive():
         sample.plot('ArrDelay', 'DepDelay', marker="o", ls='')
         plt.title(f'{year}')
         plt.plot([0, xm], [0, xm])
-        plt.savefig(PLOT_DIR / 'Arr_vs_Dep_Delays' / f'{year}.png')
+        plt.savefig(folder / f'{year}.png')
         plt.close()
         print(f'year = {year}')
         # plt.show()
 
 
+def cancellation_rate_per_day():
+    folder = PLOT_DIR / 'cancellation_rate_per_day'
+    folder.mkdir(exist_ok=True)
+
+    for year in range(1987, 2009):
+        df = get_year(year)
+        df[['Cancelled', 'Date']].groupby('Date').agg(np.mean).to_csv(folder/f'{year}.csv')
+
+
 if __name__ == '__main__':
-    departure_vs_arrive()
+    cancellation_rate_per_day()
