@@ -14,7 +14,7 @@ ENDIF()
 
 IF(CMAKE_BUILD_TYPE MATCHES Release)
     message("Release mode")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fopenmp")
 ENDIF()
 
 # si se usa un virtual environment setearlo aca o desde la consola

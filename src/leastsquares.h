@@ -9,6 +9,8 @@ public:
 
     void fit(Vector x, Vector y);
 
+    Vector calculate(Matrix A, Vector y);
+
     Vector predict(Vector x);
 
 private:

@@ -11,7 +11,8 @@ PYBIND11_MODULE(sentiment, m) {
     py::class_<LeastSquaresClassifier>(m, "LeastSquaresClassifier")
         .def(py::init<>())
         .def("fit", &LeastSquaresClassifier::fit)
-        .def("predict", &LeastSquaresClassifier::predict);
+        .def("predict", &LeastSquaresClassifier::predict)
+        .def("calculate", &LeastSquaresClassifier::calculate);
 
     py::class_<KNNClassifier>(m, "KNNClassifier")
         .def(py::init<unsigned int>())

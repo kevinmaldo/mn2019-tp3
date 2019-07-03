@@ -31,19 +31,26 @@
 
 \begin{frontmatter}
 
-\title{An Article Template}
+\title{Cuadrados M\'inimos Lineales}
 
-\author{My Name\thanksref{ALL}\thanksref{myemail}}
-\address{My Department\\ My University\\ My City, My Country}
+\author{Assenza, Franco\thanksref{faemail}}
+\address{LU: 921/12}
 
-\author{My Co-author\thanksref{coemail}}
-\address{My Co-author's Department\\ My Co-author's University\\
-   My Co-author's City, My Co-author's Country} \thanks[ALL]{Thanks
-   to everyone who should be thanked} \thanks[myemail]{Email:
-   \href{mailto:myuserid@mydept.myinst.myedu} {\texttt{\normalshape
-   myuserid@mydept.myinst.myedu}}} \thanks[coemail]{Email:
-   \href{mailto:couserid@codept.coinst.coedu} {\texttt{\normalshape
-   couserid@codept.coinst.coedu}}}
+\author{Maldonado, Kevin\thanksref{kmemail}}
+\address{LU: 018/14}
+
+\author{Umfurer, Alfredo\thanksref{auemail}}
+\address{LU: 538/12}
+
+\thanks[faemail]{Email:
+\href{mailto:assenza.f@gmail.com} {\texttt{\normalshape
+assenza.f@gmail.com}}}
+\thanks[kmemail]{Email:
+\href{mailto:maldonadokevin11@gmail.com} {\texttt{\normalshape
+maldonadokevin11@gmail.com}}}
+\thanks[auemail]{Email:
+\href{mailto:aumfurer@gmail.com} {\texttt{\normalshape
+aumfurer@gmail.com}}}
 
 \begin{abstract}
 This is a short example to show the basics of using the ENDM style
@@ -58,57 +65,7 @@ Please list keywords for your paper here, separated by commas.
 
 \end{frontmatter}
 
-
-\section{Introduction}\label{intro}
-
-This short note provides a guide to using the ENDM macro package for
-preparing papers for publication in your conference \emph{Proceedings}.
-The \emph{Proceedings} may be printed and hard copies distributed to
-participants at the meeting; this is an option conference organizers
-may choose to exercise.  The \emph{Proceedings} also will be part of
-a volume in the series \emph{Electronic Notes in Discrete Mathematics}
-(ENDM), which is published under the auspices of Elsevier B.~V., the
-publishers of \emph{Discrete Mathematics} and \emph{Discrete Applied
-Mathematics}. The ENDM home page can be found at
-\href{http://www.elsevier.com/locate/endm}
-{\texttt{http://www.elsevier.com/locate/endm}}
-
-The ENDM macro package consists of two files:
-\begin{itemize}
-\item \texttt{endm.cls}. This is the basic style file.
-\item \texttt{endmmacro.sty}. A macro file containing the definitions
-of some of the theorem-like environments and a few other things.
-\end{itemize}
-
-The formatting these style files impose should \emph{not} be altered.
-The reason for using them is to attain a uniform format for all papers
-in the \emph{Proceedings} of which your paper is a part.
-
-Additional macro files can be added using \verb+\usepackage{...}+.
-The file \texttt{endmmacro.sty} \emph{must} be included in the
-list, as is done at the start of the source file for these
-instructions.
-
-The ENDM package requires a relatively up-to-date \LaTeX\ system in
-order to be successfully used. This is reflected in two other packages
-that are called by endm.cls, which must be available on your machine.
-These are:
-\begin{itemize}
-\item The \texttt{hyperref} package. This package allows the use of
-hyperlinks in files prepared using \LaTeX 2e, one of the main features
-of Adobe's Acrobat$^{\copyright}$ Reader software. Be sure that you
-have at least version 6.69d of this package.
-\item The \texttt{ifpdf} package. This is used by hyperref to
-differentiate between the use of pdf\LaTeX\ and \LaTeX 2e, followed
-by dvips and then ps2pdf.
-\end{itemize}
-
-The file \texttt{instraut.pdf} contains information about the use of
-\LaTeX to prepare files for online publication by Elsevier. This file
-refers to the older version of \LaTeX\ that is no longer suppported,
-and that is inadequate for preparing \texttt{.pdf} files for online
-publication. Reading this file should answer most of the basic
-questions about \LaTeX\ that might arise.
+\input{intro.tex}
 
 
 \section{Frontmatter}
