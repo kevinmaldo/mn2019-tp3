@@ -1,0 +1,9 @@
+*.so
+Makefile
+CMakeCache.txt
+cmake_install.cmake
+CMakeFiles/
+data/
+venv/
+notebooks/.pynb_checkpoints
+.idea/
