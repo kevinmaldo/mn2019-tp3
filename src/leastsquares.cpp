@@ -32,12 +32,9 @@ void LeastSquaresClassifier::fit(Vector x, Vector y) {
 }
 
 // TODO: podria usar ComputeThinU nomas?
-Vector LeastSquaresClassifier::calculate(Matrix A, Vector y) {
-    py::print(A.rows());
-    py::print(A.cols());
-    py::print(y.rows());
+Vector LeastSquaresClassifier::calculate(Matrix A, Vector b) {
     Eigen::BDCSVD<Matrix> svd(A, Eigen::ComputeFullU | Eigen::ComputeFullV);
-    Vector c = svd.matrixU().transpose() * y;
+    Vector c = svd.matrixU().transpose() * b;
     Vector z = Vector::Zero(A.cols());
     auto singularValues = svd.singularValues();
     for (int i = 0; i < svd.nonzeroSingularValues(); i++) {
