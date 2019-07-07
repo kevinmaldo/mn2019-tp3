@@ -13,15 +13,12 @@ import os
 
 import time
 
-import sentiment  # TODO: cambiar el nombre
+import airline
 
 from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
 
-# No convertir Delayed en booleano, no perder la informacion de cuanta demora hay (diff entre 14 y 15 min)
-# Score a cada aerolinea
-# Score a aeropuertos
 # Mirar horario intradia
 
 # Friday's on summer
@@ -31,6 +28,9 @@ register_matplotlib_converters()
 
 
 # DONE:
+# Score a aeropuertos
+# Score a cada aerolinea
+# No convertir Delayed en booleano, no perder la informacion de cuanta demora hay (diff entre 14 y 15 min)
 # Ajustar e^(-x^2) o algo asi para sacar las hollidays
 
 sns.set()
@@ -86,9 +86,12 @@ def _build_lstsq_matrix(x):
 
 
 def _trending(df):
+
     day_timestamps = df.index.astype(np.int64) // 10 ** 9
     sns.scatterplot(day_timestamps, df["Cleaned"])
-    coefs = np.linalg.lstsq(_build_lstsq_matrix(day_timestamps), df["Cleaned"], rcond=None)[0]
+    lstq = airline.LeastSquaresClassifier()
+    A = np.stack([day_timestamps, np.ones(x.shape[0])], axis=1)
+    coefs = lstq.calculate(_build_lstsq_matrix(day_timestamps), df["Cleaned"], rcond=None)[0]
     timestamps = (df.index.astype(np.int64) // 10 ** 9)
     linear_prediction = _build_lstsq_matrix(timestamps) @ np.array(coefs)
     sns.lineplot(day_timestamps, linear_prediction).set_title("Linear trending")
@@ -321,7 +324,8 @@ def _init_prediction(df):
 
 
 def _init_cleaned(df):
-    df["Cleaned"] = df.groupby(df.index)["Delayed"].transform(np.mean)
+    #df["Cleaned"] = df.groupby(df.index)["Delayed"].transform(np.mean)
+    df["Cleaned"] = df["Delayed"]
     return df
 
 
@@ -364,7 +368,6 @@ def _build_least_squares_matrix(df):
     # features.append(df.index.dayofweek**grade)
 
     features.append(1 / (1 + np.minimum(df.index.dayofyear, abs(df.index.dayofyear - 365)) ** 2))
-
     return np.stack(features, axis=1)
 
 
@@ -436,10 +439,14 @@ def _get_pre_processed_year(year) -> pd.DataFrame:
 def _get_pre_processed_data(years) -> pd.DataFrame:
     return pd.concat(map(_get_pre_processed_year, years), ignore_index=False)
 
+def _fit2(training_years):
+    df = _get_pre_processed_data(training_years)
+    df = _init_cleaned(df)
+    df = _trending(df)
+    pass
 
 def _fit(training_years):
     df = _get_pre_processed_data(training_years)
-
     # df = _init_prediction(df)
     # df = _init_cleaned(df)
     # df = _smooth_delayed(df)
@@ -485,8 +492,9 @@ def main():
     training_years_count = -3
     training_years = ALL_DATA_RANGE[:training_years_count]
     test_years = ALL_DATA_RANGE[training_years_count:]
-    coeffs = _fit(training_years)
-    _predict(test_years, coeffs)
+    _fit2(training_years)
+    #coeffs = _fit(training_years)
+    #_predict(test_years, coeffs)
 
 
 if __name__ == "__main__":

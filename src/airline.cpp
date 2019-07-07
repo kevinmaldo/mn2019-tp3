@@ -7,7 +7,7 @@
 
 namespace py=pybind11;
 
-PYBIND11_MODULE(sentiment, m) {
+PYBIND11_MODULE(airline, m) {
     py::class_<LeastSquaresClassifier>(m, "LeastSquaresClassifier")
         .def(py::init<>())
         .def("fit", &LeastSquaresClassifier::fit)
