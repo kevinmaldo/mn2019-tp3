@@ -48,8 +48,8 @@ def cached_df(prefix: str):
             if os.path.isfile(filename):
                 df = pd.read_csv(filename)
                 df["Date"] = pd.to_datetime(df["Date"])
-                df = df.reset_index()
-                df = df.set_index("Date")
+       #         df = df.reset_index()
+       #         df = df.set_index("Date")
                 return df
             else:
                 df = f(year)
