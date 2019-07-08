@@ -19,14 +19,13 @@ class Model:
         features = []
 
         features.append(np.ones(df.shape[0]))
-        features.append(df.index.astype(np.int64) / 10 ** 9)
 
         s = 365.0  # observations per annum
         n = int(s // 2)
+        days_number = (df['Date'] - pd.Timestamp('1986-01-01')).dt.days
+        features.append(days_number)            
         for j in [0, 1, 2]:
             factor = 2 * np.pi * j / s
-            # days_number = (df.index - df.index[0]) / np.timedelta64(1, 'D')
-            days_number = (df['Date'] - pd.Timestamp('1986-01-01')).dt.days
             features.append(np.sin(days_number * factor))
             features.append(np.cos(days_number * factor))
 

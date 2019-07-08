@@ -34,7 +34,7 @@ def _set_scores(df, year):
 def _group_by_date(df):
     df = df.groupby(["Date", "UniqueCarrier", "Origin", "Dest"])["Delayed"].mean().to_frame()
     df = df.reset_index()
-    df = df.set_index("Date")
+    # df = df.set_index("Date")
     print(df.head())
     return df
 
