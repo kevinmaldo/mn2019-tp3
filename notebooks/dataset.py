@@ -15,9 +15,8 @@ def _set_date_index(df):
 
 
 def _set_delayed(df):
-    df["Delayed"] = np.maximum(0, np.maximum(df["ArrDelay"], df["DepDelay"]))
+    df["Delayed"] = np.minimum(30, np.maximum(0, np.maximum(df["ArrDelay"], df["DepDelay"])))
     df = df[~df["Delayed"].isna()]
-    # df["Delayed"] = ((df["ArrDelay"] >= 15) | (df["DepDelay"] >= 15)).astype(np.float64)
     df = df.drop(columns=["ArrDelay", "DepDelay"])
     return df
 
@@ -34,8 +33,6 @@ def _set_scores(df, year):
 def _group_by_date(df):
     df = df.groupby(["Date", "UniqueCarrier", "Origin", "Dest"])["Delayed"].mean().to_frame()
     df = df.reset_index()
-    # df = df.set_index("Date")
-    print(df.head())
     return df
 
 
@@ -48,8 +45,6 @@ def cached_df(prefix: str):
             if os.path.isfile(filename):
                 df = pd.read_csv(filename)
                 df["Date"] = pd.to_datetime(df["Date"])
-       #         df = df.reset_index()
-       #         df = df.set_index("Date")
                 return df
             else:
                 df = f(year)
