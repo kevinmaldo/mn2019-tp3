@@ -18,8 +18,8 @@ IF(CMAKE_BUILD_TYPE MATCHES Release)
 ENDIF()
 
 # si se usa un virtual environment setearlo aca o desde la consola
-set(PYTHON_EXECUTABLE "/home/kevin/Documents/computacion/metodos/mn2019-tp3/venv/bin/python")
-#set(PYTHON_LIBRARY "/path/to/lib/libpytho.so")
+# set(PYTHON_EXECUTABLE "/home/kevin/Documents/computacion/metodos/mn2019-tp3/venv/bin/python")
+# set(PYTHON_LIBRARY "/path/to/lib/libpytho.so")
 
 include_directories(eigen)
 
