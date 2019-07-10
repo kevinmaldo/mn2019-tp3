@@ -1,0 +1,11 @@
+/**/.idea
+/**/__pycache__
+/**/.ipynb_checkpoints
+*.so
+cmake_install.cmake
+CMakeCache.txt
+Makefile
+CMakeFiles/
+data/
+data_small/
+venv/
