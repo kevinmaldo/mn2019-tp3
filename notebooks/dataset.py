@@ -1,9 +1,11 @@
-import pickle
+import os
 from typing import Callable
+
 import numpy as np
 import pandas as pd
-import os
+
 import scores
+
 
 def _set_date_index(df):
     df["Date"] = df["Year"].map("{:04d}".format) + "-" + \
@@ -15,10 +17,11 @@ def _set_date_index(df):
 
 
 def _set_delayed(df):
-    df["Delayed"] = np.minimum(30, np.maximum(0, np.maximum(df["ArrDelay"], df["DepDelay"])))
+    df["Delayed"] = np.minimum(60, np.maximum(0, np.maximum(df["ArrDelay"], df["DepDelay"])))
     df = df[~df["Delayed"].isna()]
     df = df.drop(columns=["ArrDelay", "DepDelay"])
     return df
+
 
 def _set_scores(df, year):
     carrier_scores = scores.get_carrier_scores(year)
@@ -29,6 +32,7 @@ def _set_scores(df, year):
     df["DestScore"] = df["Dest"].map(dest_scores.__getitem__)
     df = df.drop(columns=["UniqueCarrier", "Origin", "Dest"])
     return df
+
 
 def _group_by_date(df):
     df = df.groupby(["Date", "UniqueCarrier", "Origin", "Dest"])["Delayed"].mean().to_frame()
@@ -50,7 +54,9 @@ def cached_df(prefix: str):
                 df = f(year)
                 df.to_csv(filename)
                 return df
+
         return wraped
+
     return decorator
 
 
