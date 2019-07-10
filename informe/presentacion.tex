@@ -22,13 +22,15 @@
 \section{Objetivos del trabajo}  
 \begin{frame}
 \frametitle{Objetivos del trabajo}
-El objetivo principal del trabajo es entender y poder predecir qué causa los delays de los vuelos de las aerolineas comerciales.\\
+\begin{itemize}
+\item El objetivo principal del trabajo es entender y poder predecir qué causa los delays de los vuelos de las aerolineas comerciales.\\
 \begin{itemize}
 \item<2-> Es culpa de las aerolineas?
 \item<3-> Es culpa de la aleatoriedad del clima?
 \item<4-> Es culpa de los aeropuertos sobrepasando su capacidad?
 \end{itemize}
-Además de esto, vamos a hacer un breve análisis para intentar entender los movimientos en bolsa de las aerolineas.
+\item<5-> Además de esto, vamos a hacer un breve análisis para intentar entender los movimientos en bolsa de las aerolineas.
+\end{itemize}
 \end{frame}
  
 \section{Marco Teórico}
@@ -37,28 +39,42 @@ Además de esto, vamos a hacer un breve análisis para intentar entender los mov
 
 Ideas:
 \begin{itemize}
-\item<2-> Analizar distintos componentes responsables
-\begin{itemize}
-\item<3-> 'fittear' distintas funciones a los datos
-\item<4-> \textbf{Cuadrados mínimos}
+	\item<2-> Analizar distintos componentes responsables
+	\begin{itemize}
+		\item<3-> 'fittear' distintas funciones a los datos
+		\item<4-> \textbf{Cuadrados mínimos} con la familia de funciones $\prod a_i \cdot \phi_i(x_i)$ donde las $\phi$ contemplan
+		\begin{itemize}	
+			\item<5-> Una componente lineal, que aparece con el crecimiento natural en el tránsito aéreo.
+			\item<6-> Componentes periódicas sinusoidales, para capturar períodos temporales como temporadas, días de semana y horarios pico
+			\item<7-> Una componente especialmente puntiaguda, para capturar los días festivos de fin de año.
+			\item<8-> Componentes basadas en scores, de la aerolínea y de los aeropuertos
+		\end{itemize}
+	\end{itemize}
 \end{itemize}
-\item<5-> Componentes impredecibles
+\end{frame}
+\begin{frame}
 \begin{itemize}
-\item<5-> Clima
-\item<5-> Eventualidades
-\item<5-> Eventos mundialmente relevantes
-\begin{itemize}
-\item<6-> Caidas de la bolsa
-\item<6-> 9/11
-\end{itemize}
-\item<7-> Componentes fuera de nuestro alcance
-\begin{itemize}
-\item<7-> Bancarrotas de aerolíneas
-\item<7-> Fusiones de aerolíneas
+	\item<1-> Componentes impredecibles
+	\begin{itemize}
+		\item<1-> Clima
+		\item<1-> Eventualidades relacionadas con los aeropuertos y las aerolíneas
+		\item<1-> Eventos mundialmente relevantes
+		\begin{itemize}
+			\item<2-> Caidas de la bolsa
+			\item<2-> 9/11
+		\end{itemize}
+	\end{itemize}
+	\item<3-> Componentes fuera de nuestro alcance
+	\begin{itemize}
+		\item<3-> Bancarrotas de aerolíneas
+		\item<3-> Fusiones de aerolíneas
+	\end{itemize}
 \end{itemize}
 
-\end{itemize}
-\item<8-> Mirar la bolsa la bolsa la bolsa
+\end{frame}
+\begin{frame}
+\begin{itemize}
+	\item Mirar la bolsa la bolsa la bolsa
 \end{itemize}
 
 
@@ -75,7 +91,7 @@ Usamos la siguiente metodología para analizar los datos y sacar conclusiones
 \end{frame}
 
 \section{Descubrimientos}
-\begin{frame}
+\begin	{frame}
 \frametitle{Descubrimientos}
 \begin{itemize}
 \item No hay que volar con United porque te sacan del vuelo con un taser porque overbookean los vuelos
