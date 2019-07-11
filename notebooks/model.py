@@ -149,7 +149,7 @@ def _report_metrics(training_years_count):
     model = Model(ALL_DATA_RANGE)
 
     training_years = ALL_DATA_RANGE[:training_years_count]
-    test_years = ALL_DATA_RANGE[training_years_count:]
+    test_years = ALL_DATA_RANGE[training_years_count:training_years_count+1]
 
     train_df = dataset.get_pre_processed_data(training_years).reset_index()
 
