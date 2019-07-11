@@ -89,8 +89,8 @@ def main():
     prices_by_carrier = pd.pivot_table(prices_df,
                                       index="Date", columns="Carrier", values="Close",
                                       aggfunc=np.mean, fill_value=0).resample("W").mean()
-    #_make_correlations_plot(count_by_carrier, prices_by_carrier)
-    _make_bar_plot(flights_df, prices_df)
+    _make_correlations_plot(count_by_carrier, prices_by_carrier)
+    #_make_bar_plot(flights_df, prices_df)
     return
     for airline in ["AA", "AS", "B6", "DL", "HA", "OO", "UA", "WN"]:
 

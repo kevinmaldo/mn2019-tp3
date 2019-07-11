@@ -111,3 +111,52 @@ que algunas m\'etricas mejoran (como Recall y Balanced Accuracy), pero otras emp
 de entrenamiento es m\'as susceptible a \textit{overfitting}, o que al entrenar con conjunto de datos
 m\'as grande se toma en consideraci\'on datos viejos que no son tan influyentes en los datos m\'as nuevos.
 
+En la figura \ref{fig:flights_and_stock_prices} se grafican la cantidad de vuelos y el precio de las acciones
+de algunas aerol\'ineas. En ella se puede ver algunas cosas notables, como por ejemplo el gran desplome
+de los precios de las acciones con la crisis de 2008, o la aparici\'on importante de la aerol\'inea \texttt{AA},
+y su ca\'ida en el 2008 a\'un m\'as grande que la de las otras aerol\'ineas.
+
+\begin{figure}[hbtp]
+  \centering
+  \includegraphics[width=0.7\textwidth, height=2.5in]{plots/flights_and_stock_prices.png}
+  \caption{Cantidad de vuelos y precio de las acciones por aerol\'inea}
+  \label{fig:flights_and_stock_prices}
+\end{figure}
+
+Una pregunta que nos planteamos es: \textquestiondown Est\'an correlacionadas ambas variables? Para
+estudiarlo, consideramos, para cada aerol\'inea, qu\'e porcentaje de vuelos le corresponda a esa
+aerol\'inea, y qu\'e porcentaje de precio de la acci\'on le corresponde (sobre el conjunto de aerol\'ineas para
+las que tenemos datos de precios de acciones), y estudiamos la correlaci\'on (v\'ia coeficiente
+de Pearson) de ambas variables a lo largo del tiempo. Exponemos los resultados del coeficiente de Pearson en la figura
+\ref{table:pearson}. De la figura se desprende que no hay una correlaci\'on evidente entre estas variables,
+ya que los valores del coeficiente de Pearson son variables entre 0.74 y -0.94.
+
+\begin{figure}
+\tiny
+\begin{center}
+  \begin{tabular}{||c || c ||}
+ \hline
+ Carrier & Pearson \\ [1ex]
+ \hline\hline
+ AA & 0.74 \\
+ \hline
+ AS & 0.33 \\
+ \hline
+ B6 & -0.94 \\
+ \hline
+ DL & 0.53 \\
+ \hline
+ HA & 0.05 \\
+ \hline
+ OO & -0.6 \\
+ \hline
+ UA & 0.29 \\
+ \hline
+ WN & -0.62 \\ [1ex]
+ \hline
+\end{tabular}
+\end{center}
+\caption{Coeficiente de Pearson entre el porcentaje de vuelos
+y el porcentaje de precio de las acciones para cada aerol\'inea}
+\label{table:pearson}
+\end{figure}
