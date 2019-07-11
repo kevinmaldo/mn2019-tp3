@@ -1,37 +1,35 @@
-\section{Introduction}\label{intro}
+\section{Introducci\'on}\label{sec:intro}
 
 El an\'alisis de la performance de una aerol\'inea es importante para
-distintos agentes: la aerovl\'inea en s\'i, para analizar aspectos a 
+distintos agentes: la aerol\'inea en s\'i, para analizar aspectos a
 mejorar; los clientes, para elegir la mejor opci\'on a la hora de realizar
 un vuelo; la competencia, para tomar mejores decisiones de mercado;
 los gobiernos, para analizar la aerol\'inea de bandera y su 
 competitividad, etc\'etera. El estudio de los retrasos de los vuelos
 es fundamental: vuelos retrasados pueden causar inconvenientes en
 la organizaci\'on de los clientes, en sus combinaciones de vuelos.
-Retrasos excesivos pueden ser causas de resarcimients econ\'omicos
+Retrasos excesivos pueden ser causas de resarcimientos econ\'omicos
 e influir negativamente en la imagen de la empresa.
 
 Los algoritmos de aprendizaje autom\'atico nos permiten realizar
 predicciones de distintas variables en base a registros previos.
-En este caso, contamos con datos del \textit{U.S. Departmen
-of Transportation}\footnote{https://www.transtats.bts.gov/Fields.asp?Table\_ID=236},
-utilizados en una competencia de visualizaci\'on
-de datos de la \textit{American Statistical Asociation}\footnote{
-http://stat-computing.org/dataexpo/2009/}, que nos proveen
-de registros de vuelos en Estados Unidos de 1994 a 2008, con
+En este caso, contamos con datos de registros de vuelos en Estados Unidos con
 informaci\'on sobre la fecha, el origen y el destino, tiempos
 estimados y reales de despegue y aterrizaje, entre otros.
 
 El an\'alisis de series temporales tiene amplia difusi\'on en la
-literatura, con aplicaciones importantes en muchas \'areas del
+literatura (ver\cite{timeseries}, por ej.), con aplicaciones importantes
+en muchas \'areas del
 conocimiento. En este trabajo, vamos a enfocarnos en un modelo de regresi\'on
 lineal para aprender sobre el cuerpo de datos y realizar un pron\'ostico
 a futuro.
 
+\subsection{Predicci\'on}\label{subsec:prediction}
+Para el modelo de predicci\'on utilizamos regresi\'on lineal\cite{esl},
+resuelto utilizando el m\'etodo de Cuadrados m\'inimos lineales, con el algoritmo
+de\cite{burden} (p\'ag 621) mediante la descomposici\'on SVD.
 
-
-
-
+\iffalse
 This short note provides a guide to using the ENDM macro package for
 preparing papers for publication in your conference \emph{Proceedings}.
 The \emph{Proceedings} may be printed and hard copies distributed to
@@ -80,3 +78,4 @@ refers to the older version of \LaTeX\ that is no longer suppported,
 and that is inadequate for preparing \texttt{.pdf} files for online
 publication. Reading this file should answer most of the basic
 questions about \LaTeX\ that might arise.
+\fi

@@ -3,6 +3,7 @@ import os
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.stats
 
 _AIRLINES = ["AA", "AS", "B6", "DL", "HA", "OO", "UA", "WN"]
 
@@ -61,9 +62,12 @@ def _make_correlations_plot(count_pivot_table, prices_pivot_table):
     for airline_idx, airline in enumerate(_AIRLINES):
         count_ratio = count_pivot_table[airline] / count_sum
         price_ratio = prices_pivot_table[airline] / prices_sum
+        idxs = (count_ratio > 0.0) & (price_ratio > 0.0)
         fig, ax = plt.subplots(1, 1)
-        sns.lineplot(count_sum.index, count_ratio, ax=ax)
-        sns.lineplot(prices_sum.index, price_ratio, ax=ax)
+        sns.lineplot(count_sum.loc[idxs].index, count_ratio[idxs], ax=ax, label="Flies ratio").set_title("Airline: " + airline)
+        sns.lineplot(prices_sum.loc[idxs].index, price_ratio[idxs], ax=ax, label="Stock price ratio")
+        pearson = scipy.stats.pearsonr(count_ratio[idxs], price_ratio[idxs])[0]
+        print("Pearsion for airline {}: {}".format(airline, pearson))
         plt.show()
         plt.close()
 
