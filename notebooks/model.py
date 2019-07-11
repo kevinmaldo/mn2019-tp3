@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import time
+
 import dataset
 import airline
 import numpy as np
@@ -22,11 +24,15 @@ def beep():
     os.system('play -nq -t alsa synth {} sine {}'.format(duration, freq))
 
 
+sample_size = -1
+
+
 class Model:
 
     def __init__(self, data_range):
         self._coeffs = None
         self.coeff_labels = []
+        self.classifier = None
 
     def _build_lstq_matrix(self, df):
 
@@ -78,7 +84,13 @@ class Model:
 
     def fit(self, df):
         A = self._build_lstq_matrix(df)
-        self._coeffs = np.linalg.lstsq(A, df["Delayed"], rcond=None)[0]
+        # self._coeffs = np.linalg.lstsq(A, df["Delayed"], rcond=None)[0]
+        sample = np.random.randint(0, len(A), size=sample_size)
+        if sample_size > 0:
+            self.classifier = airline.LeastSquaresClassifier()
+            self._coeffs = self.classifier.calculate(A[sample], df["Delayed"].to_numpy()[sample])
+        else:
+            self._coeffs = airline.lstsq(A, df["Delayed"], rcond=None)[0]
         return self
 
     def show_coeffs(self):
@@ -163,7 +175,7 @@ def main():
     accuracy_threshold_plot(prediction, test_df)
 
     test_df["Prediction"] = prediction
-    grouped = test_df.groupby(["Date"]).mean()
+    # grouped = test_df.groupby(["Date"]).mean()
     # plt.figure()
     # sns.lineplot(grouped.index, grouped["Delayed"], data=grouped, color='r')
     # sns.lineplot(grouped.index, grouped["Prediction"], data=grouped, color='b')
@@ -181,4 +193,8 @@ def main():
 
 
 if __name__ == "__main__":
+    sample_size = 50_000
     main()
+
+    print(dir(airline))
+    print(dir(airline.LeastSquaresClassifier))
