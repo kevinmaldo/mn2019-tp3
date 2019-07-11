@@ -3,6 +3,7 @@ from typing import Callable
 
 import numpy as np
 import pandas as pd
+from pandas.plotting import autocorrelation_plot
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import mean_squared_error
@@ -14,11 +15,13 @@ import os
 import time
 
 import airline
+import dataset
 
 from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
 
+sns.set()
 # Mirar horario intradia
 
 # Friday's on summer
@@ -86,30 +89,30 @@ def _build_lstsq_matrix(x):
 
 
 def _trending(df):
+    grouped = df.groupby("Date")["Cleaned"].mean().to_frame()
+    grouped = grouped.reset_index()
 
-    day_timestamps = df.index.astype(np.int64) // 10 ** 9
-    sns.scatterplot(day_timestamps, df["Cleaned"])
-    lstq = airline.LeastSquaresClassifier()
-    A = np.stack([day_timestamps, np.ones(x.shape[0])], axis=1)
-    coefs = lstq.calculate(_build_lstsq_matrix(day_timestamps), df["Cleaned"], rcond=None)[0]
-    timestamps = (df.index.astype(np.int64) // 10 ** 9)
-    linear_prediction = _build_lstsq_matrix(timestamps) @ np.array(coefs)
-    sns.lineplot(day_timestamps, linear_prediction).set_title("Linear trending")
+    day_timestamps = grouped["Date"].astype(np.int64) // 10 ** 9
+    sns.scatterplot(day_timestamps, grouped["Cleaned"])
+    A = np.stack([day_timestamps, np.ones(grouped.shape[0])], axis=1)
+    coefs = np.linalg.lstsq(A, grouped["Cleaned"], rcond=None)[0]
+    linear_prediction = A @ np.array(coefs)
 
-    # TODO: se pisan los titulos
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(20, 10))
-    sns.scatterplot(df.index, df["Cleaned"], ax=ax1).set_title("Linear trending")
-    sns.lineplot(df.index, linear_prediction, ax=ax1, color='r')
-    sns.scatterplot(df.index, df["Cleaned"] - linear_prediction, ax=ax2).set_title("Without linear trending")
+    sns.scatterplot(grouped["Date"], grouped["Cleaned"], ax=ax1).set_title("Linear trending")
+    sns.lineplot(grouped["Date"], linear_prediction, ax=ax1, color='r')
+    sns.scatterplot(grouped["Date"], grouped["Cleaned"] - linear_prediction, ax=ax2)\
+        .set_title("Without linear trending")
 
-    ax1.set_xlim([df.index[0], df.index[-1]])
-    ax2.set_xlim([df.index[0], df.index[-1]])
+    ax1.set_xlim([grouped["Date"].min(), grouped["Date"].max()])
+    ax2.set_xlim([grouped["Date"].min(), grouped["Date"].max()])
+    ax1.set(ylabel="Mean delayed time (min)")
+    ax2.set(ylabel="Mean delayed time (min)")
     fig.savefig(os.path.join(_PLOTS_FOLDER, "linear_trending.png"))
     plt.close()
 
-    df["WithoutTrend"] = df["Cleaned"] - linear_prediction
-    df["Prediction"] += linear_prediction
-    df["Cleaned"] -= linear_prediction
+    total_A = np.stack([df["Date"].astype(np.int64) // 10 ** 9, np.ones(df.shape[0])], axis=1)
+    df["Cleaned"] -= total_A @ coefs
     return df
 
 
@@ -222,32 +225,8 @@ def _hollidays(df):
     return df
 
 
-def _plot_within_year(df):
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(20, 10))
-    sns.lineplot(df.index.month, df["Cleaned"], ax=ax1).set_title("Grouped by month of year")
-    sns.boxplot(df.index.month, df["Cleaned"], ax=ax2).set_title("Boxplot")
-    months = df.resample("M")["Cleaned"].mean()
-    sns.scatterplot(months.index, months.values, ax=ax3).set_title("TODO")
-    ax3.set_xlim([months.index[0], months.index[-1]])
-    fig.savefig(os.path.join(_PLOTS_FOLDER, "within_year.png"))
 
 
-def _plot_within_month(df):
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(20, 10))
-    sns.lineplot(df.index.day, df["Cleaned"], ax=ax1).set_title("Grouped by day of month")
-    sns.boxplot(df.index.day, df["Cleaned"], ax=ax2).set_title("Boxplot")
-    sns.scatterplot(df.index[:91], df["Cleaned"][:91], ax=ax3).set_title("Zoomed first months")
-    ax3.set_xlim([df.index[0], df.index[90]])
-    fig.savefig(os.path.join(_PLOTS_FOLDER, "within_month.png"))
-
-
-def _plot_within_week(df):
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(20, 10))
-    sns.lineplot(df.index.dayofweek, df["Cleaned"], ax=ax1).set_title("Grouped by day of week")
-    sns.boxplot(df.index.dayofweek, df["Cleaned"], ax=ax2).set_title("Boxplot")
-    sns.scatterplot(df.index[:22], df["Cleaned"][:22], ax=ax3).set_title("Zoomed first months")
-    ax3.set_xlim([df.index[0], df.index[21]])
-    fig.savefig(os.path.join(_PLOTS_FOLDER, "within_week.png"))
 
 
 def _within_week_periodic(df):
@@ -279,17 +258,6 @@ def _within_week_periodic(df):
     return df
 
 
-def _year_periodicity(df):
-    fig = plt.figure()
-    sns.scatterplot(df.index.dayofyear, df.WithoutTrend)
-    pol = np.polyfit(df.index.dayofyear, df.WithoutTrend, 7)
-    year_prediction = np.polyval(pol, df.index.dayofyear)
-    sns.lineplot(df.index.dayofyear, year_prediction)
-    df["WithoutYearPeriod"] = df["WithoutTrend"] - year_prediction
-    df["Prediction"] += year_prediction
-    df["Cleaned"] -= year_prediction
-    plt.close()
-    return df
 
 
 def _week_periodicity(df) -> pd.DataFrame:
@@ -446,11 +414,10 @@ def _fit2(training_years):
     pass
 
 def _fit(training_years):
-    df = _get_pre_processed_data(training_years)
-    # df = _init_prediction(df)
-    # df = _init_cleaned(df)
-    # df = _smooth_delayed(df)
-    # df = _trending(df)
+    df = dataset.get_pre_processed_data(training_years)
+    df = _init_prediction(df)
+    df = _init_cleaned(df)
+    df = _trending(df)
     # df = _hollidays(df)
     # df = _sum_of_periodic(df)
     # df = _first_periodic(df)
@@ -486,13 +453,98 @@ def _predict(test_years, coeffs):
     fig.savefig(os.path.join(_PLOTS_FOLDER, "final_prediction.png"))
     plt.close()
 
+def _autocorrelation(df):
+    df = df.copy()
+    df["DaysNumber"] = (df["Date"] - df["Date"].min()) / np.timedelta64(1, 'D')
+    df = df.groupby("DaysNumber")["Cleaned"].mean()
+    fig = plt.figure()
+    ax = autocorrelation_plot(df)
+    ax.set_xlim([0, 366])
+    fig.savefig(os.path.join(_PLOTS_FOLDER, "autocorrelation.png"))
+    return df
+
+def _year_periodicity(df):
+    fig = plt.figure()
+    sns.scatterplot(df.index.dayofyear, df.WithoutTrend)
+    pol = np.polyfit(df.index.dayofyear, df.WithoutTrend, 7)
+    year_prediction = np.polyval(pol, df.index.dayofyear)
+    sns.lineplot(df.index.dayofyear, year_prediction)
+    df["WithoutYearPeriod"] = df["WithoutTrend"] - year_prediction
+    df["Prediction"] += year_prediction
+    df["Cleaned"] -= year_prediction
+    plt.close()
+    return df
+
+def _plot_within_year(df):
+    df = df.groupby("Date")["Cleaned"].mean().to_frame().reset_index()
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(20, 10))
+    sns.lineplot(df["Date"].dt.month, df["Cleaned"], ax=ax1).set_title("Grouped by month of year")
+    sns.boxplot(df["Date"].dt.month, df["Cleaned"], ax=ax2).set_title("Boxplot")
+
+    months = df.set_index("Date").resample("M")["Cleaned"].mean()
+    #sns.scatterplot(months.index, months.values, ax=ax3).set_title("TODO")
+    #ax3.set_xlim([months.index[0], months.index[-1]])
+    fig.savefig(os.path.join(_PLOTS_FOLDER, "within_year.png"))
+
+def _plot_within_month(df):
+    df = df.groupby("Date")["Cleaned"].mean().to_frame().reset_index()
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(20, 10))
+    sns.lineplot(df["Date"].dt.day, df["Cleaned"], ax=ax1).set_title("Grouped by day of month")
+    sns.boxplot(df["Date"].dt.day, df["Cleaned"], ax=ax2).set_title("Boxplot")
+    #sns.scatterplot(df.iloc[:91]["Date"], df.iloc[:91]["Cleaned"], ax=ax3).set_title("Zoomed first months")
+    #ax3.set_xlim([df["Date"].min(), df["Date"].min() + pd.Timedelta('91 days')])
+    fig.savefig(os.path.join(_PLOTS_FOLDER, "within_month.png"))
+
+
+def _plot_within_week(df):
+    df = df.groupby("Date")["Cleaned"].mean().to_frame().reset_index()
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(20, 10))
+    sns.lineplot(df["Date"].dt.dayofweek, df["Cleaned"], ax=ax1).set_title("Grouped by day of week")
+    sns.boxplot(df["Date"].dt.dayofweek, df["Cleaned"], ax=ax2).set_title("Boxplot")
+    #sns.scatterplot(df.iloc[:22]["Date"], df.iloc[:22]["Cleaned"], ax=ax3).set_title("Zoomed first months")
+    #ax3.set_xlim([df["Date"].min(), df["Date"].min() + pd.Timedelta('21 days')])
+    fig.savefig(os.path.join(_PLOTS_FOLDER, "within_week.png"))
+
+def _plot_carrier_score(df):
+    scores = pd.read_csv(os.path.join("..", "scores", "scores_carrier_2008.csv"))
+    scores.columns = ["Carrier", "Score", "Count"]
+    scores = scores.sort_values(by="Score", ascending=False).iloc[:10]
+    fig = plt.figure()
+    sns.barplot(y="Carrier", x="Score", data=scores)
+    fig.savefig(os.path.join(_PLOTS_FOLDER, "carrier_scores_2008.png"))
+
+def _plot_airport_score(filename, ax):
+    scores = pd.read_csv(os.path.join("..", "scores", filename))
+    scores.columns = ["Airport", "Score", "Count"]
+    scores = scores.sort_values(by="Score", ascending=False).iloc[:10]
+    sns.barplot(y="Airport", x="Score", data=scores, ax=ax)
+    ax.set_xlim([10, 31])
+
+def _plot_airport_both_scores(df):
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    _plot_airport_score("scores_origin_2008.csv", ax1)
+    _plot_airport_score("scores_dest_2008.csv", ax2)
+    fig.savefig(os.path.join(_PLOTS_FOLDER, "airport_scores_2008.png"))
+
+def experiments(years):
+    df = dataset.get_pre_processed_data(years)
+    df = _init_cleaned(df)
+    df = _trending(df)
+    # _autocorrelation(df)
+    _plot_within_year(df)
+    _plot_within_month(df)
+    _plot_within_week(df)
+    _plot_carrier_score(df)
+    _plot_airport_both_scores(df)
+    return df
+
 
 def main():
-    ALL_DATA_RANGE = list(range(1987, 2009))
+    ALL_DATA_RANGE = list(range(2002, 2009))
     training_years_count = -3
     training_years = ALL_DATA_RANGE[:training_years_count]
     test_years = ALL_DATA_RANGE[training_years_count:]
-    _fit2(training_years)
+    experiments(training_years)
     #coeffs = _fit(training_years)
     #_predict(test_years, coeffs)
 

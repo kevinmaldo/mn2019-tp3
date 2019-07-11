@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+import matplotlib
+matplotlib.use('TkAgg')
+
 import dataset
 import airline
 import numpy as np
@@ -15,6 +18,7 @@ from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
 
+_PLOTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "informe", "plots")
 
 def beep():
     duration = 0.3  # seconds
@@ -22,11 +26,15 @@ def beep():
     os.system('play -nq -t alsa synth {} sine {}'.format(duration, freq))
 
 
+sample_size = -1
+
+
 class Model:
 
     def __init__(self, data_range):
         self._coeffs = None
         self.coeff_labels = []
+        self.classifier = None
 
     def _build_lstq_matrix(self, df):
 
@@ -78,7 +86,13 @@ class Model:
 
     def fit(self, df):
         A = self._build_lstq_matrix(df)
-        self._coeffs = np.linalg.lstsq(A, df["Delayed"], rcond=None)[0]
+        # self._coeffs = np.linalg.lstsq(A, df["Delayed"], rcond=None)[0]
+        sample = np.random.randint(0, len(A), size=sample_size)
+        if sample_size > 0:
+            self.classifier = airline.LeastSquaresClassifier()
+            self._coeffs = self.classifier.calculate(A[sample], df["Delayed"].to_numpy()[sample])
+        else:
+            self._coeffs = airline.lstsq(A, df["Delayed"], rcond=None)[0]
         return self
 
     def show_coeffs(self):
@@ -94,7 +108,6 @@ def _is_delayed(delayed_times, t=15):
 
 
 ALL_DATA_RANGE = list(range(2002, 2009))
-training_years_count = -3
 
 
 def nrmse(xs, ys):
@@ -117,13 +130,12 @@ def accuracy_threshold_plot(prediction, test_df):
     plt.plot(mins, bass)
     plt.xlabel("threshold (minutes)")
     plt.ylabel("balanced precision")
-    plt.savefig("accuracy_by_thresshold")
-    plt.show()
+    plt.savefig(os.path.join(_PLOTS_FOLDER, "accuracy_by_thresshold.png"))
 
 
 def show_scores(prediction, test_df):
-    print(f"true RMSE: {rmse(test_df.Delayed, prediction)}")
-    print(f"NRMSE: {nrmse(test_df.Delayed, prediction)}")
+    print(f"Delay RMSE: {rmse(test_df.Delayed, prediction)}")
+    print(f"Delay NRMSE: {nrmse(test_df.Delayed, prediction)}")
     test_is_delayed = _is_delayed(test_df.Delayed)
     pred_is_delayed = _is_delayed(prediction)
     print(f"RMSE: {rmse(test_is_delayed, pred_is_delayed)}")
@@ -132,8 +144,8 @@ def show_scores(prediction, test_df):
     print(f"Recall: {recall_score(test_is_delayed, pred_is_delayed)}")
     print(f"Balanced Accuracy: {balanced_accuracy_score(test_is_delayed, pred_is_delayed)}")
 
-
-def main():
+def _report_metrics(training_years_count):
+    print(f"Running with training years count: {training_years_count}")
     model = Model(ALL_DATA_RANGE)
 
     training_years = ALL_DATA_RANGE[:training_years_count]
@@ -142,15 +154,9 @@ def main():
     train_df = dataset.get_pre_processed_data(training_years).reset_index()
 
     model.fit(train_df)
-    model.show_coeffs()
+    #model.show_coeffs()
 
     train_df["Prediction"] = model.predict(train_df)
-
-    # plt.figure()
-    train_grouped = train_df.groupby(["Date"]).mean()
-    # sns.lineplot(train_grouped.index, train_grouped["Delayed"], color='r')
-    # sns.lineplot(train_grouped.index, train_grouped["Prediction"], color='b')
-    # plt.show()
 
     test_df = dataset.get_pre_processed_data(test_years)
     test_df = test_df[test_df["Date"] < '2008-09-01']  # remove the 2008 recesion
@@ -163,22 +169,23 @@ def main():
     accuracy_threshold_plot(prediction, test_df)
 
     test_df["Prediction"] = prediction
-    grouped = test_df.groupby(["Date"]).mean()
-    # plt.figure()
-    # sns.lineplot(grouped.index, grouped["Delayed"], data=grouped, color='r')
-    # sns.lineplot(grouped.index, grouped["Prediction"], data=grouped, color='b')
-    # plt.show()
 
     final_df = pd.concat([train_df, test_df], sort=False)
     final_df["Prediction"] = model.predict(final_df)
-    final_grouped = final_df.groupby(["Date"]).mean()
-    fig, ax = plt.subplots(1, 1)
-    sns.lineplot(final_grouped.index, final_grouped["Delayed"], color='r', label="data", ax=ax)
-    sns.lineplot(final_grouped.index, final_grouped["Prediction"], color='b', label="prediction", ax=ax)
-    ax.axvline(x=test_df["Date"].min(), linestyle="--")
-    plt.show()
-    plt.close()
+    final_grouped = final_df.set_index("Date").resample("W").mean()
+    #fig, ax = plt.subplots(1, 1, figsize=(20, 10))
+    #sns.lineplot(final_grouped.index, final_grouped["Delayed"], color='r', label="data", ax=ax)
+    #sns.lineplot(final_grouped.index, final_grouped["Prediction"], color='b', label="prediction", ax=ax)
+    #ax.set(ylabel="Delayed time (min)")
+    #ax.axvline(x=test_df["Date"].min(), linestyle="--")
+    #fig.savefig(os.path.join(_PLOTS_FOLDER, "example_fit_and_prediction_{}.png".format(training_years_count)))
+    #plt.close()
 
+
+def main():
+    for training_years_count in range(1, len(ALL_DATA_RANGE)):
+        _report_metrics(training_years_count)
 
 if __name__ == "__main__":
+    sample_size = 50_000
     main()
