@@ -1,0 +1,41 @@
+\section{Conclusi\'on}
+En este trabajo pudimos apreciar las dificultades del problema de intentar predecir los
+retrasos en los vuelos.
+Observamos que hay factores que incrementan la posibilidad de que un vuelo se retrase,
+como por ejemplo el dia de la semana o eventos estacionales, pero a\'un con estos es
+dif\'icil poder tener certeza en las prediciones obtenidas, lo cual se vi\'o reflejado en
+los valores que obtuvimos en metricas que usamos, en particular la recall: De la mayor\'ia
+de las veces que se predijo un retraso, el mismo no existi\'o.
+
+\iffalse
+
+Realizando una evaluación final sobre el trabajo, nos quedamos con una sensación ambigua.
+A través del primer eje, pudimos ver las dificultades que tenía la predicción a gran escala,
+pues al querer focalizar en una época del año o en cierto aeropuerto, lo que en un primer
+momento parecía un método aceptable se transformó en un sistema de malas predicciones. A su vez,
+este eje nos mostró los problemas de evaluar el error a través de ECM, ya que al trabajar con valores
+de magnitud como lo son los delays en minutos, un error importante en una estimación generaría que el
+valor medio crezca de forma desmesurada.
+
+Sin embargo, al crear el segundo eje sobre una escala mucho más pequeña, con menos datos y una
+hipótesis clara, nos tropezamos con resultados poco conclusivos, métodos cuyo nivel de predicción
+eran bastante limitados y la incapacidad de definir la significancia de las variables, tanto del
+método como de los datos provistos. Esto simplemente nos confundío más aún, pero repasando el trabajo
+y pensando en frío sobre ambos ejes, llegamos a algunas conclusiones respecto al método en sí.
+
+Si bien no obtuvimos buenos resultados al aplicar una hipótesis sobre el segundo eje, esta claro que
+hubo una gran significancia de los primeros resultados vistos sobre el aeropuerto de Denver.
+Sin
+embargo, el condicionante fue una mala hipótesis basada en un eje que no habíamos evaluado
+anteriormente (el delay aéreo). Probablemente, de haber generado una relación mayor entre lo
+visto en el primer eje y lo propuesto en el segundo, habríamos alcanzado resultados mucho más vistosos,
+producto de que contábamos con una serie de datos que nos guiarían durante la experimentación.
+
+Así, aún cuando obtuvimos datos interesantes en el primer eje respecto a un caso particular,
+los
+mismos se vieron opacados al darle a la investigación un camino equivocado. De este modo, concluímos
+que la idea de comenzar de forma general para luego buscar información particular fue correcta, pero
+no así el planteo que le dimos al segundo eje, pues cualquier hipótesis con un respaldo pobre siempre
+tendrá una mayor probabilidad de estar equivocada.
+
+\fi
