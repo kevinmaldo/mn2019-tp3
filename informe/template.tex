@@ -21,6 +21,11 @@
 
 \newcommand{\Nat}{{\mathbb N}}
 \newcommand{\Real}{{\mathbb R}}
+
+\usepackage{xparse}
+\NewDocumentCommand{\codeword}{v}{%
+\texttt{#1}%
+}
 \def\lastname{Please list your Lastname here}
 
 \begin{document}
@@ -66,7 +71,8 @@ Please list keywords for your paper here, separated by commas.
 \end{frontmatter}
 
 \input{intro.tex}
-
+\input{model.tex}
+\input{results.tex}
 
 \section{Frontmatter}
 
@@ -422,6 +428,15 @@ The criteria are illustrated by the examples below.
   
 \bibitem{w} Weyl, H., ``The Classical Groups,'' 2nd Ed., Princeton U.
   Press, Princeton, N.J., 1946.
+
+\bibitem{esl} Hastie, T., ``The Elements of Statistical Learning: Data Mining, Inference, and Prediction,''
+2nd Ed., Springer, 2019.
+
+\bibitem{burden} Burden, R., and Faires, J., ``Numerical Analysis,''
+9th Ed., Brooks/Cole, 2011.
+
+\bibitem{timeseries} Shumway, R., and Stoffer, D., ``Time Series Analysis and Its Applications,''
+3rd Ed., Springer, 2010.
 
 \end{thebibliography}
 

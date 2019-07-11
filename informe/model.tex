@@ -1,0 +1,29 @@
+\section{Desarrollo}\label{sec:desarrollo}
+
+\section{Implementaci\'on y ejecuci\'on}\label{sec:ejecucion}
+El m\'etodo de cuadrados m\'inimos fue implementado en \codeword{C++} utilizando
+la librer\'ia de c\'alculo num\'erico \codeword{Eigen} para la descomposici\'on SVD,
+los experimentos fueron realizados en \codeword{Python} utilizando las librer\'ias
+de c\'alculo num\'erico \codeword{numpy} y \codeword{scipy}, y
+las librer\'ias de visualizaci\'on \codeword{matplotlib} y \codeword{seaborn}.
+Todo se ejecut\'o en una m\'aquina con procesador \codeword{Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz}
+y \codeword{32 GB} de memoria RAM.
+
+\subsection{Datos}\label{subsec:datos}
+Los datos pertenecen al \textit{U.S. Departmen of
+Transportation}\footnote{https://www.transtats.bts.gov/Fields.asp?Table\_ID=236},
+utilizados en una competencia de visualizaci\'on
+de datos de la \textit{American Statistical Association}\footnote{
+http://stat-computing.org/dataexpo/2009/}.
+Dado que los datos son susceptibles a problemas en Estados Unidos, en este trabajo
+estudiamos los datos a partir de 2002 (para evitar el ruido generado por el atentado a las torres
+gemelas) y antes de septiembre de 2008 (para no considerar los problemas de la recesi\'on de 2008).
+
+\subsection{Transformaci\'on}\label{subsec:transformacion}
+ACA DECIMOS QUE PENSAMOS DELAYED COMO MAS DE 15 MIN, QUE CAPEAMOS A 60 Y 0 PARA NEGATIVOS.
+
+\subsection{Extracci\'on de features}\label{subsec:extraccion}
+COMPLETAR
+
+\subsection{Validaci\'on}\label{subsec:validacion}
+DECIR ACA QUE USAMOS INTERVALOS PARA ENTRENAR E INTERVALOS PARA TESTEAR, Y QUE LOS FUIMOS MOVIENDO
