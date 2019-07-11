@@ -48,7 +48,7 @@ class Model:
         # add_feature('ones', np.ones(df.shape[0]))
 
         s = 365.0  # observations per annum
-        days_number = (df['Date'] - df["Date"].min()).dt.days
+        days_number = (df['Date'] - pd.Timestamp('1986-01-01')).dt.days
         add_feature('day', days_number)
 
         # freq_years = [

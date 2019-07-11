@@ -78,25 +78,36 @@ entre 2002 y 2006 y datos de test a partir de 2006.
 Nos planteamos la pregunta: \textquestiondown Aprende el algoritmo efectivamente de los datos? \textquestiondown Mejora la predicci\'on si
 entrenamos con m\'as datos? Para responder a esta pregunta, ejecutamos el modelo entrenando con una cantidad
 creciente de a\~nos, desde uno a todos menos uno, y testeamos contra los dem\'as a\~nos. Exponemos
-los resultados de las m\'etricas en la tabla:
+los resultados de las m\'etricas en la figura \ref{table:metrics}
 
+\begin{figure}
 \begin{center}
  \resizebox{\textwidth}{!}{%
   \begin{tabular}{||c || c | c | c | c | c | c | c||}
  \hline
  Training years & Delay RMSE & Delay NRMSE & RMSE & Accuracy & Precision & Recall & Balanced Accuracy \\ [1ex]
  \hline\hline
- 1 & 14.22 & 0.24 & 0.53 & 0.72 & 0.21 & 0 & 0.5 \\
+ 1 & 14.19 & 0.24 & 0.53 & 0.72 & 0.32 & 0 & 0.5 \\
  \hline
- 2 & 14.13 & 0.24 & 0.54 & 0.71 & 0.46 & 0 & 0.5 \\
+ 2 & 13.94 & 0.23 & 0.54 & 0.71 & 0.43 & 0 & 0.5 \\
  \hline
- 3 & 14.25 & 0.24 & 0.55 & 0.7 & 0.47 & 0.02 & 0.51 \\
+ 3 & 14.01 & 0.23 & 0.57 & 0.68 & 0.42 & 0.21 & 0.54 \\
  \hline
- 4 & 14.68 & 0.24 & 0.56 & 0.69 & 0.47 & 0.02 & 0.50 \\
+ 4 & 14.42 & 0.24 & 0.58 & 0.66 & 0.42 & 0.26 & 0.55 \\
  \hline
- 5 & 14.9 & 0.25 & 0.56 & 0.68 & 0.5 & 0.03 & 0.51 \\
+ 5 & 14.62 & 0.24 & 0.59 & 0.65 & 0.42 & 0.27 & 0.55 \\
  \hline
- 6 & 14.85 & 0.25 & 0.56 & 0.69 & 0.49 & 0.04 & 0.51 \\ [1ex]
+ 6 & 14.81 & 0.27 & 0.6 & 0.64 & 0.40 & 0.34 & 0.55 \\ [1ex]
  \hline
 \end{tabular}}
 \end{center}
+\caption{M\'etricas para distintos datos de entrenamiento}
+\label{table:metrics}
+\end{figure}
+
+Los resultados de las ejecuciones para distintos conjuntos de entrenamiento son parad\'ojicos, ya
+que algunas m\'etricas mejoran (como Recall y Balanced Accuracy), pero otras empeoran
+(como Delay NRMSE). Nuestra hip\'otesis es que se puede deber a que el modelo con m\'as datos
+de entrenamiento es m\'as susceptible a \textit{overfitting}, o que al entrenar con conjunto de datos
+m\'as grande se toma en consideraci\'on datos viejos que no son tan influyentes en los datos m\'as nuevos.
+
