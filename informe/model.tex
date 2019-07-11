@@ -20,13 +20,32 @@ estudiamos los datos a partir de 2002 (para evitar el ruido generado por el aten
 gemelas) y antes de septiembre de 2008 (para no considerar los problemas de la recesi\'on de 2008).
 
 \subsection{Transformaci\'on}\label{subsec:transformacion}
-ACA DECIMOS QUE PENSAMOS DELAYED COMO MAS DE 15 MIN, QUE CAPEAMOS A 60 Y 0 PARA NEGATIVOS.
+Al leer los datos, consideramos el retraso de un vuelo como: 0 si el vuelo est\'a adelantado o no est\'a
+atrasado, o el m\'aximo entre el retraso de despegue y el retraso de aterrizaje (en minutos) con un
+valor m\'aximo de 60 minutos. Estas decisiones fueron basadas en la mejor performance del algoritmo.
 
 \subsection{Extracci\'on de features}\label{subsec:extraccion}
-COMPLETAR
+La extracci\'on de features se realiz\'o de manera iterativa: se plante\'o una hip\'otesis (por ejemplo:
+"Los datos tienen una tendencia lineal creciente"), se ajust\'o una funci\'on acorde a la hip\'otesis
+(por ejemplo: una funci\'on lineal), se elimin\'o esa componente de los datos (por ejemplo: restarle a los datos
+el resultado de la funci\'on lineal) y se procedi\'o a estudiar la siguiente hip\'otesis.
+Los features considerados fueron: tendencia lineal al crecimiento, periodicidad con distintas frecuencias,
+pico de retraso para d\'ias cercanos al 31/12, retraso medio de aerol\'ineas y aeropuertos
+(ver secci\'on \ref{subsec:scores}), d\'ia de la semana.
+.
 
 \subsection{Scores}\label{subsec:scores}
-COMPLETAR CON COMO SE CALCULARON SCORES
+Le asignamos a cada aerol\'inea un puntaje por a\~no que es el estimado de retraso de la aerol\'inea ese a\~no,
+ y a cada aeropuerto dos puntajes por a\~no, que son los estimados de retraso de ese aeropuerto
+como origen o como destino de vuelo. Los puntajes est\'an entre 0 y 30 minutos como m\'aximo.
 
-\subsection{Validaci\'on}\label{subsec:validacion}
-DECIR ACA QUE USAMOS INTERVALOS PARA ENTRENAR E INTERVALOS PARA TESTEAR, Y QUE LOS FUIMOS MOVIENDO
+\subsection{Evaluaci\'on}\label{subsec:evaluacion}
+Para la evaluaci\'on del algoritmo se utiliz\'o un conjunto de datos distinto al de entrenamiento,
+se convirti\'o a los tiempos de retrasos en booleanos: 0 si el retraso es menor que 15 minutos, 1 si el retraso
+es mayor o igual que 15 minutos, y sobre ese arreglo de booleanos se reportaron las m\'etricas:
+\begin{itemize}
+ \item Delay RMSE: RMSE de los tiempos de retraso de los vuelos, en minutos
+ \item Delay NRMSE: RMSE de los tiempos de retraso de los vuelos, normalizado
+ \item RMSE: RMSE del arreglo de booleanos
+ \item Accuracy, precision, recall, balanced accuracy: del arreglo de booleanos
+\end{itemize}
