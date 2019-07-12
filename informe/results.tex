@@ -49,17 +49,19 @@ A modo de ejemplo, se muestran los m\'as altos scores
 en las figuras \ref{fig:carrier_scores} y \ref{fig:airport_scores}.
 
 \begin{figure}[hbtp]
-  \centering
-  \includegraphics[width=0.6\textwidth, height=2in]{plots/carrier_scores_2008.png}
-  \caption{Primeros puntajes de aerol\'ineas}
-  \label{fig:carrier_scores}
-\end{figure}
-
-\begin{figure}[hbtp]
-  \centering
-  \includegraphics[width=0.7\textwidth, height=2in]{plots/airport_scores_2008.png}
-  \caption{Primeros puntajes de aeropuertos (origen y destino)}
-  \label{fig:airport_scores}
+\centering
+\begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=0.8\linewidth]{plots/carrier_scores_2008.png}
+      \caption{Primeros puntajes de aerol\'ineas}
+      \label{fig:carrier_scores}
+    \end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=0.8\linewidth]{plots/airport_scores_2008.png}
+      \caption{Primeros puntajes de aeropuertos (origen y destino)}
+      \label{fig:airport_scores}
+    \end{subfigure}
 \end{figure}
 
 Sobre la base de este an\'alisis se escogieron los features descritos en la secci\'on \ref{subsec:extraccion}.
