@@ -4,8 +4,17 @@ retrasos en los vuelos.
 Observamos que hay factores que incrementan la posibilidad de que un vuelo se retrase,
 como por ejemplo el dia de la semana o eventos estacionales, pero a\'un con estos es
 dif\'icil poder tener certeza en las prediciones obtenidas, lo cual se vi\'o reflejado en
-los valores que obtuvimos en metricas que usamos, en particular la recall: De la mayor\'ia
-de las veces que se predijo un retraso, el mismo no existi\'o.
+los valores que obtuvimos en m\'etricas que usamos, en particular la \testit{recall}: detectamos
+un bajo porcentaje de verdaderos positivos.
+
+La dificultad viene asociada a la complejidad inherente del problema: los retrasos en los vuelos dependen
+de muchos m\'as factores que los solamente temporales peri\'odicos o de la aerol\'inea/aeropuerto. Distintos
+eventos que no consideramos en el modelo, como el clima, contribuyen a retrasos en vuelos que son m\'as
+dif\'iciles de predecir con la informaci\'on del dataset que estudiamos.
+
+Mucho m\'as dif\'icil a\'un de predecir es el precio de las acciones de las aerol\'ineas, sujeto a
+especulaciones financieras que muchas veces no est\'an directamente relacionadas con el estado
+actual de la aerol\'inea sino con proyecciones a futuro, por ejemplo.
 
 \iffalse
 
