@@ -51,30 +51,14 @@ class Model:
         days_number = (df['Date'] - pd.Timestamp('1986-01-01')).dt.days
         add_feature('day', days_number)
 
-        # freq_years = [
-        #     0, 1, 2, 3, 4, 5, 6,  # some peaks per year
-        #     10, 11, 12, 13, 14, 15,  # around one peak per month
-        #     21, 22, 23, 24, 25, 26,  # around two peaks per month
-        #     50, 51, 52, 53, 54, 55,  # around one peak per week
-        #     102, 103, 104, 105, 106, 107,  # around two peaks per week
-        #     363, 364, 365, 366, 367  # around one peak per day
-        # ]
-
         freq_years = [1, 2, 3, 4, 6, 12]
         for j in freq_years:
             factor = 2 * np.pi * j / s
             add_feature(f'sin year/{j}', np.sin(days_number * factor))
             add_feature(f'cos year/{j}', np.cos(days_number * factor))
 
-        # add_feature(f'sin day', np.sin(days_number % 7 * 2 * np.pi / 7))
-        # add_feature(f'cos day', np.cos(days_number % 7 * 2 * np.pi / 7))
-
         for day in range(7):
             add_feature(f'day {day}', days_number % 7 == day)
-
-        # holidays = [185, 245, 287, 315, 332, 359]
-        # for holiday in holidays:
-        #     add_feature(f'holiday {holiday}', days_number == holiday)
 
         add_feature('End of year',
                     1 / (1 + np.minimum(df['Date'].dt.dayofyear, abs(df['Date'].dt.dayofyear - 365)) ** 2))
@@ -92,7 +76,7 @@ class Model:
             self.classifier = airline.LeastSquaresClassifier()
             self._coeffs = self.classifier.calculate(A[sample], df["Delayed"].to_numpy()[sample])
         else:
-            self._coeffs = airline.lstsq(A, df["Delayed"], rcond=None)[0]
+            self._coeffs = np.linalg.lstsq(A, df["Delayed"], rcond=None)[0]
         return self
 
     def show_coeffs(self):
@@ -154,7 +138,7 @@ def _report_metrics(training_years_count):
     train_df = dataset.get_pre_processed_data(training_years).reset_index()
 
     model.fit(train_df)
-    #model.show_coeffs()
+    model.show_coeffs()
 
     train_df["Prediction"] = model.predict(train_df)
 
@@ -173,13 +157,13 @@ def _report_metrics(training_years_count):
     final_df = pd.concat([train_df, test_df], sort=False)
     final_df["Prediction"] = model.predict(final_df)
     final_grouped = final_df.set_index("Date").resample("W").mean()
-    #fig, ax = plt.subplots(1, 1, figsize=(20, 10))
-    #sns.lineplot(final_grouped.index, final_grouped["Delayed"], color='r', label="data", ax=ax)
-    #sns.lineplot(final_grouped.index, final_grouped["Prediction"], color='b', label="prediction", ax=ax)
-    #ax.set(ylabel="Delayed time (min)")
-    #ax.axvline(x=test_df["Date"].min(), linestyle="--")
-    #fig.savefig(os.path.join(_PLOTS_FOLDER, "example_fit_and_prediction_{}.png".format(training_years_count)))
-    #plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=(20, 10))
+    sns.lineplot(final_grouped.index, final_grouped["Delayed"], color='r', label="data", ax=ax)
+    sns.lineplot(final_grouped.index, final_grouped["Prediction"], color='b', label="prediction", ax=ax)
+    ax.set(ylabel="Delayed time (min)")
+    ax.axvline(x=test_df["Date"].min(), linestyle="--")
+    fig.savefig(os.path.join(_PLOTS_FOLDER, "example_fit_and_prediction_{}.png".format(training_years_count)))
+    plt.close()
 
 
 def main():
