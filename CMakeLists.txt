@@ -27,9 +27,6 @@ add_subdirectory(pybind11)
 
 pybind11_add_module(airline
                     src/airline.cpp
-                    src/knn.cpp
-                    src/pca.cpp
-                    src/eigen.cpp
 		    src/leastsquares.cpp)
 
 

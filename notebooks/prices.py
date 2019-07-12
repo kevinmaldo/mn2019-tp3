@@ -4,7 +4,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats
-import matplotlib.ticker as ticker
 
 _AIRLINES = ["AA", "AS", "B6", "DL", "HA", "OO", "UA", "WN"]
 _PLOTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "informe", "plots")
@@ -20,11 +19,10 @@ def _get_flights_count():
                  df["Month"].map("{:02d}".format) + "-" + \
                  df["DayofMonth"].map("{:02d}".format)
     df["Date"] = pd.to_datetime(df["Date"])
-    #df = df[df["Date"] < '2008-09-01']
+    df = df[df["Date"] < '2008-09-01']
     flights_df = df.drop(columns=['Year', 'Month', 'DayofMonth'])
     flights_df = flights_df.groupby(["Date", "UniqueCarrier"]).size().to_frame()
     flights_df = flights_df.reset_index()
-    #flights_df["Date"] = pd.to_datetime(flights_df["Date"])
     flights_df = flights_df.rename(columns={0: "Count", "UniqueCarrier": "Carrier"})
     flights_df = flights_df[flights_df["Carrier"].isin(_AIRLINES)]
     return flights_df
@@ -37,7 +35,6 @@ def _get_stock_prices():
         df["Date"] = pd.to_datetime(df["Date"])
         dfs.append(df)
     df = pd.concat(dfs, ignore_index=False)
-    #df["Date"] = pd.to_datetime(df["Date"])
     df = df.sort_values(by=["Date"])
     return df
 
@@ -55,9 +52,8 @@ def _make_bar_plot(flights_df, prices_df):
     for plot_idx, pivot_table in enumerate([count_by_carrier, prices_by_carrier]):
         for airline_idx, airline in enumerate(_AIRLINES):
             airline_serie = pivot_table[airline]
-            g = sns.barplot(pivot_table.index, airline_serie,
+            sns.barplot(pivot_table.index, airline_serie,
                         bottom=accums[plot_idx], color=colors[airline_idx], ax=axs[plot_idx], label=airline)
-            #g.set(xticks=pivot_table["Date"][::60])
             accums[plot_idx] += airline_serie.values
     axs[0].set(ylabel="Flights count")
     axs[1].set(ylabel="Share price")
@@ -90,15 +86,7 @@ def main():
                                       index="Date", columns="Carrier", values="Close",
                                       aggfunc=np.mean, fill_value=0).resample("W").mean()
     _make_correlations_plot(count_by_carrier, prices_by_carrier)
-    #_make_bar_plot(flights_df, prices_df)
-    return
-    for airline in ["AA", "AS", "B6", "DL", "HA", "OO", "UA", "WN"]:
-
-        fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
-
-        sns.lineplot(x="Date", y="Close", data=prices_df[prices_df["Carrier"] == airline], ax=ax1)
-        sns.lineplot(x="Date", y="Count", data=flights_df[flights_df["Carrier"] == airline], ax=ax2)
-        plt.show()
+    _make_bar_plot(flights_df, prices_df)
 
 if __name__ == "__main__":
     main()
